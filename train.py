@@ -50,22 +50,3 @@ def train_model(model: nn.Module, dataloaders: Dict[str, DataLoader], criterion:
     model.load_state_dict(best_model_wts)
     return model
 
-if __name__ == "__main__":
-    image_dataset = SARImageDataset('seep_detection/train_images_256/', 'seep_detection/train_masks_256/', transform=transform)
-    dataset_size = len(image_dataset)
-    val_split = 0.2
-    val_size = int(np.floor(val_split * dataset_size))
-    train_size = dataset_size - val_size
-    train_dataset, val_dataset = torch.utils.data.random_split(image_dataset, [train_size, val_size])
-
-    dataloaders: Dict[str, DataLoader] = {
-        'train': DataLoader(train_dataset, batch_size=32, shuffle=True),
-        'val': DataLoader(val_dataset, batch_size=32, shuffle=False)
-    }
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = UNet(in_channels=1, out_channels=8).to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
-
-    trained_model = train_model(model, dataloaders, criterion, optimizer, num_epochs=20)
